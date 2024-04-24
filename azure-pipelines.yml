@@ -1,0 +1,30 @@
+trigger: none
+# trigger:
+#   batch: true
+#   branches:
+#     include:
+#     - main
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+# Lint the Bicep file.
+- stage: Lint
+  jobs: 
+  - template: pipeline-templates/lint.yml
+
+# Deploy to the Dev environment.
+# - template: pipeline-templates/deploy.yml
+#   parameters:
+#     environmentType: dev
+
+# Deploy to the Pre-Production environment.
+# - template: pipeline-templates/deploy.yml
+#   parameters:
+#     environmentType: preprod
+
+# # Deploy to the Production environment.
+# - template: pipeline-templates/deploy.yml
+#   parameters:
+#     environmentType: prod

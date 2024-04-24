@@ -1,0 +1,109 @@
+# yaml-language-server: $schema=./deploy.yml
+
+parameters:
+- name: environmentType
+  type: string
+  
+- name: deploymentDefaultLocation
+  type: string
+  default: uksouth
+
+stages:
+# validate and preview stages are only run for non-production environments
+- ${{ if ne(parameters.environmentType, 'prd') }}:
+  - stage: Validate_${{ parameters.environmentType }}
+    displayName: Validate (${{ parameters.environmentType }} Environment)
+    jobs:
+    - job: ValidateBicepCode
+      displayName: Validate Bicep code
+      variables:
+      - group: PCC_${{ parameters.environmentType }}
+      - group: ${{ lower(parameters.environmentType) }}DomainCredentials
+      - name: environmentLongName
+        ${{ if eq(parameters.environmentType, 'dev') }}:
+          value: dev
+        ${{ elseif eq(parameters.environmentType, 'pre') }}:
+          value:preprod
+        ${{ elseif eq(parameters.environmentType, 'prd') }}:
+          value: prod
+      steps:
+        - task: AzureResourceManagerTemplateDeployment@3
+          name: RunPreflightValidation
+          displayName: Run preflight validation
+          inputs:
+            azureResourceManagerConnection: ${{ variables.environmentLongName }}
+            location: ${{ parameters.deploymentDefaultLocation }}
+            deploymentMode: Validation
+            resourceGroupName: $(ResourceGroupName)
+            csmFile: ../staticConfig/main.bicep
+            overrideParameters: >
+              -adminUsername $(AdminUsername)
+              -adminPassword $(AdminPassword)
+              -environmentType ${{ parameters.environmentType }}
+              
+
+- ${{ if ne(parameters.environmentType, 'prd') }}:
+  - stage: Preview_${{parameters.environmentType}}
+    displayName: Preview (${{ parameters.environmentType }} Environment)
+    jobs:
+    - job: PreviewAzureChanges
+      displayName: Preview Azure changes
+      variables:
+      - group: ${{ parameters.environmentType }}
+      - group: ${{ parameters.environmentType }}DomainCredentials
+      - name: environmentLongName
+        ${{ if eq(parameters.environmentType, 'dev') }}:
+          value: dev
+        ${{ elseif eq(parameters.environmentType, 'preprod') }}:
+          value: preprod
+        ${{ elseif eq(parameters.environmentType, 'prd') }}:
+          value: prod
+      steps:
+        - task: AzureCLI@2
+          name: RunWhatIf
+          displayName: Run what-if
+          inputs:
+            azureSubscription: ${{ variables.environmentLongName }}
+            scriptType: 'bash'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              az deployment group what-if \
+                --resource-group $(ResourceGroupName) \
+                --template-file ../staticConfig/main.bicep \
+                --parameters adminUsername=$(AdminUsername) adminPassword=$(AdminPassword) environmentType=${{ lower(parameters.environmentType) }} 
+
+- stage: Deploy_${{ parameters.environmentType }}
+  displayName: Deploy (${{ parameters.environmentType }} Environment)
+  jobs:
+  - deployment: DeployBicep
+    displayName: Deploy Bicep
+    variables:
+    - group: ${{ parameters.environmentType }}
+    - name: environmentLongName
+      ${{ if eq(parameters.environmentType, 'dev') }}:
+        value: dev
+      ${{ elseif eq(parameters.environmentType, 'pre') }}:
+        value: preprod
+      ${{ elseif eq(parameters.environmentType, 'prd') }}:
+        value: prod
+    environment: ${{ variables.environmentLongName }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+
+            - task: AzureResourceManagerTemplateDeployment@3
+              name: DeployBicepFile
+              displayName: Deploy Bicep file
+              inputs:
+                azureResourceManagerConnection: ${{ variables.environmentLongName }}
+                deploymentName: ${{ parameters.environmentType }}-$(Build.BuildNumber)
+                deploymentMode: Incremental
+                location: ${{ parameters.deploymentDefaultLocation }}
+                resourceGroupName: $(ResourceGroupName)
+                csmFile: ../staticConfig/main.bicep
+                overrideParameters: >
+                  -adminUsername $(AdminUsername)
+                  -adminPassword $(AdminPassword)
+                  -environmentType ${{ lower(parameters.environmentType) }}

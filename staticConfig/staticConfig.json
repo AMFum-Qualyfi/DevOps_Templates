@@ -1,0 +1,239 @@
+{
+    "dev": {
+        "environmentTag": "Development",
+        "vNetResourceGroup": "",
+        "virtualNetworkName": "",
+        "appSubnetName": "",
+        "dataSubnetName": "",
+        "ouPath": "",
+        "domainName": "",
+        "applicationSecurityGroup": "",
+        "servers": {
+            "web": {
+                "vmSize": "Standard_B4ms",
+                "ipAddresses": [
+                    "10.0.10.03"
+                ],
+                "dataDiskSize": [
+                    64
+                ]
+            },
+            "bps": {
+                "vmSize": "Standard_B4ms",
+                "ipAddresses": [
+                    "10.0.10.138"
+                ],
+                "dataDiskSize": [
+                    64
+                ]
+            },
+            "dst": {
+                "vmSize": "Standard_B4ms",
+                "ipAddresses": [
+                    "10.0.10.00"
+                ],
+                "dataDiskSize": [
+                    64
+                ]
+            },
+            "sql": {
+                "vmSize": "Standard_B4ms",
+                "ipAddresses": [
+                    "10.0.11.8",
+                    "10.0.11.10"
+                ],
+                "dataDiskSize": [
+                    50,
+                    10,
+                    10
+                ]
+            }
+        }
+    },
+    "pre": {
+        "environmentTag": "Pre-Production",
+        "vNetResourceGroup": "",
+        "virtualNetworkName": "",
+        "appSubnetName": "",
+        "dataSubnetName": "",
+        "ouPath": "O",
+        "domainName": "",
+        "applicationSecurityGroup": "",
+        "servers": {
+            "web": {
+                "vmSize": "Standard_F8s_v2",
+                "ipAddresses": [
+                    "10.0.10.1",
+                    "10.0.10.2"
+                ],
+                "dataDiskSize": [
+                    64
+                ],
+                "loadbalancerIP": "10.0.10.13"
+            },
+            "bps": {
+                "vmSize": "Standard_D8s_v3",
+                "ipAddresses": [
+                    "10.0.10.24",
+                    "10.0.10.30"
+                ],
+                "dataDiskSize": [
+                    64
+                ],
+                "loadbalancerIP": "10.0.10.22"
+            },
+            "eai": {
+                "vmSize": "Standard_D16s_v3",
+                "ipAddresses": [
+                    "10.0.10.26",
+                    "10.0.10.31"
+                ],
+                "dataDiskSize": [
+                    64
+                ],
+                "loadbalancerIP": "10.0.10.34"
+            },
+            "dst": {
+                "vmSize": "Standard_D8s_v3",
+                "ipAddresses": [
+                    "10.0.10.27",
+                    "10.0.10.32"
+                ],
+                "dataDiskSize": [
+                    64
+                ],
+                "loadbalancerIP": "10.0.0.35"
+            },
+            "app": {
+                "vmSize": "Standard_D16s_v3",
+                "ipAddresses": [
+                    "10.0.0.28",
+                    "10.0.0.33"
+                ],
+                "dataDiskSize": [
+                    20
+                ],
+                "loadbalancerIP": "10.0.0.36"
+            },
+            "sql": {
+                "vmSize": "Standard_E16bds_v5",
+                "ipAddresses": [
+                    "10.0.15.4",
+                    "10.0.15.6"
+                ],
+                "dataDiskSize": [
+                    600,
+                    80,
+                    50
+                ],
+                "loadbalancerIP": "10.0.15.11"
+            },
+            "rep": {
+                "vmSize": "Standard_E16bds_v5",
+                "ipAddresses": [
+                    "10.0.15.5",
+                    "10.0.15.7"
+                ],
+                "dataDiskSize": [
+                    800,
+                    80,
+                    50
+                ],
+                "loadbalancerIP": "10.0.15.19"
+            }
+        }
+    },
+    "prod": {
+        "environmentTag": "Production",
+        "vNetResourceGroup": "",
+        "virtualNetworkName": "",
+        "appSubnetName": "",
+        "dataSubnetName": "",
+        "ouPath": "",
+        "domainName": "",
+        "applicationSecurityGroup": "",
+        "servers": {
+            "web": {
+                "vmSize": "Standard_F8s_v2",
+                "ipAddresses": [
+                    "20.0.20.1",
+                    "20.0.20.2"
+                ],
+                "dataDiskSize": [
+                    64
+                ],
+                "loadbalancerIP": "20.0.20.13"
+            },
+            "bps": {
+                "vmSize": "Standard_D8s_v3",
+                "ipAddresses": [
+                    "20.0.20.24",
+                    "20.0.20.30"
+                ],
+                "dataDiskSize": [
+                    64
+                ],
+                "loadbalancerIP": "20.0.20.22"
+            },
+            "eai": {
+                "vmSize": "Standard_D16s_v3",
+                "ipAddresses": [
+                    "20.0.20.26",
+                    "20.0.20.31"
+                ],
+                "dataDiskSize": [
+                    64
+                ],
+                "loadbalancerIP": "20.0.20.34"
+            },
+            "dst": {
+                "vmSize": "Standard_D8s_v3",
+                "ipAddresses": [
+                    "20.0.20.27",
+                    "20.0.20.32"
+                ],
+                "dataDiskSize": [
+                    64
+                ],
+                "loadbalancerIP": "20.0.0.35"
+            },
+            "app": {
+                "vmSize": "Standard_D16s_v3",
+                "ipAddresses": [
+                    "20.0.0.28",
+                    "20.0.0.33"
+                ],
+                "dataDiskSize": [
+                    20
+                ],
+                "loadbalancerIP": "20.0.0.36"
+            },
+            "sql": {
+                "vmSize": "Standard_E16bds_v5",
+                "ipAddresses": [
+                    "20.0.15.4",
+                    "20.0.15.6"
+                ],
+                "dataDiskSize": [
+                    600,
+                    80,
+                    50
+                ],
+                "loadbalancerIP": "20.0.15.11"
+            },
+            "rep": {
+                "vmSize": "Standard_E16bds_v5",
+                "ipAddresses": [
+                    "20.0.15.5",
+                    "20.0.15.7"
+                ],
+                "dataDiskSize": [
+                    800,
+                    80,
+                    50
+                ],
+                "loadbalancerIP": "20.0.15.19"
+            }
+        }
+    }
+}
