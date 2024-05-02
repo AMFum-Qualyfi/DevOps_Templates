@@ -17,7 +17,7 @@ stages:
     - job: ValidateBicepCode
       displayName: Validate Bicep code
       variables:
-      - group: PCC_${{ parameters.environmentType }}
+      - group: ${{ parameters.environmentType }}
       - group: ${{ lower(parameters.environmentType) }}DomainCredentials
       - name: environmentLongName
         ${{ if eq(parameters.environmentType, 'dev') }}:
