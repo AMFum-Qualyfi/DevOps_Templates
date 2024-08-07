@@ -12,15 +12,15 @@ parameters:
     - DEV
     - PREPROD
     - PROD
-    default: SND # See https://dev.azure.com/anglianwater/Application%20Ops/_wiki/wikis/Application-Ops.wiki/10646/Environments
+    default: SND 
   - name: ServiceConnection
     type: string
     values:
-    - AWS_SANDBOX
-    - AWS_DEV
-    - AWS_PREPROD
-    - AWS_PROD
-    default: AWS_SANDBOX # See https://dev.azure.com/anglianwater/Application%20Ops/_wiki/wikis/Application-Ops.wiki/10643/Service-Connections
+    - SANDBOX
+    - DEV
+    - PREPROD
+    - PROD
+    default: SANDBOX 
   - name: Location
     type: string
     values:
