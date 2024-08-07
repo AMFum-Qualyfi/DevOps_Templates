@@ -1,0 +1,149 @@
+trigger: none # amend trigger accordingly
+
+
+pool:
+  vmImage: ubuntu-latest
+
+parameters:
+  - name: Environment
+    type: string
+    values:
+    - SND
+    - DEV
+    - PREPROD
+    - PROD
+    default: SND # See https://dev.azure.com/anglianwater/Application%20Ops/_wiki/wikis/Application-Ops.wiki/10646/Environments
+  - name: ServiceConnection
+    type: string
+    values:
+    - AWS_SANDBOX
+    - AWS_DEV
+    - AWS_PREPROD
+    - AWS_PROD
+    default: AWS_SANDBOX # See https://dev.azure.com/anglianwater/Application%20Ops/_wiki/wikis/Application-Ops.wiki/10643/Service-Connections
+  - name: Location
+    type: string
+    values:
+    - uksouth
+    - ukwest
+    default: uksouth 
+  - name: ResourceGroupName
+    type: string
+    default: 'devops-iac' # When running pipeline, insert Resource Group Name
+  - name: templateFile
+    type: string
+    default: '' # Insert file path to bicep file
+  - name: templateParameters
+    type: string
+    default: '' # Insert file path to parameter file
+  - name: ownerTag
+    type: string
+    default: '@{Owner="name"}' # When running pipeline, Insert name of resource Owner
+  - name: branchName
+    type: string
+    default: 'New_bicep_templates'
+
+#variables:
+  #- group: # insert name of variable group to reference variables
+  
+
+stages:
+
+#Linting stage
+- stage: Lint
+  jobs:
+  - job: LintCode
+    displayName: Lint code
+    continueOnError: false
+    steps:
+      - script: | 
+          az bicep build --file ${{ parameters.templateFile }}
+        name: LintBicepCode
+        displayName: Run Bicep linter
+
+#Validate Code against environment stage
+- stage: Validate 
+  jobs:
+  - job: ValidateBicepCode
+    displayName: Validate Bicep code
+    continueOnError: false
+    # variables:
+    steps:
+      - task: AzureResourceManagerTemplateDeployment@3
+        name: RunPreflightValidation
+        displayName: Run preflight validation
+        inputs:
+          connectedServiceName: ${{ parameters.ServiceConnection }}
+          resourceGroupName: ${{ parameters.ResourceGroupName }}
+          templateLocation: 'Linked artifact'
+          location: ${{ parameters.Location }}
+          deploymentMode: Validation
+          csmFile: ${{ parameters.templateFile }} 
+          csmParametersFile: ${{ parameters.templateParameters }}
+          overrideParameters: > # Insert necessary parameters 
+            
+
+# Preview resource updates/changes stage
+- stage: Preview_Whatif
+  jobs:
+  - job: whatifTestBicepTemplate
+    continueOnError: false
+    # variables:
+    steps:
+    - task: AzureCLI@2
+      displayName: What if Test Bicep Template 
+      continueOnError: false
+      inputs:
+        azureSubscription: ${{ parameters.ServiceConnection }}
+        scriptType: 'bash'
+        scriptLocation: inlineScript
+        inlineScript: |
+          az deployment group what-if \
+            --resource-group ${{ parameters.ResourceGroupName }} \
+            --template-file ${{ parameters.templateFile }} \
+            --parameters ${{ parameters.templateParameters }}
+
+
+#Deployment stage
+- stage: Deploy
+  dependsOn: 
+  - Preview_Whatif 
+  - Validate
+  - Lint
+  jobs:
+  - deployment: Deploy_Bicep
+    environment: ${{ parameters.Environment }}
+    continueOnError: false
+    # variables:
+    strategy:
+      runOnce:    
+        deploy: 
+          steps:
+            - checkout: self
+            - task: AzureResourceManagerTemplateDeployment@3
+              name: DeployBicepFile
+              displayName: Deploy Bicep file
+              inputs:
+                connectedServiceName: ${{ parameters.ServiceConnection }}
+                action: 'Create Or Update Resource Group'
+                templateLocation: 'Linked artifact'
+                location: ${{ parameters.Location }}
+                resourceGroupName: ${{ parameters.ResourceGroupName }}
+                csmFile: ${{ parameters.templateFile }}
+                deploymentMode: 'Incremental' 
+                csmParametersFile: ${{ parameters.templateParameters }}
+                overrideParameters: > # Insert necessary parameters 
+
+# Job to apply tag to branch once merged into main, allowing branch to be deleted
+  - job: GitTag
+    dependsOn: Deploy_Bicep
+    displayName: Set GIT Tag with branch name
+    condition: and(succeeded(), eq(variables.runTaskInCI, true))
+    steps:
+    - checkout: self
+      persistCredentials: true
+    - powershell: |
+        Write-Host "Tagging Build with: Branch name"
+        $env:GIT_REDIRECT_STDERR` = '2>&1'
+        git tag ${{ parameters.branchName }}
+        git push origin ${{ parameters.branchName }}
