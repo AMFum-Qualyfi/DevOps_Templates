@@ -6,18 +6,18 @@ param staticIpAllocation bool = false
 @description('The Resource id of the disk encryption set')
 param desID string = ''
 param vmName string = 'testVM'
-param adminUsername string = 
+param adminUsername string 
 @minLength(12)
 @secure()
 param adminP string 
 param vmSize string = 'Standard_D2s_v3'
-param privateIP string = 
+param privateIP string 
 param subnetId string 
 param secureImageId string 
 @description('Name of the domain to which Virtual Machines should be joined.')
-param domainName string = 
+param domainName string 
 @description('Path to OU to which Virtual Machine should be added.')
-param ouPath string = 
+param ouPath string 
 @description('Username for account which should be used for domain joining.')
 param domainUser string
 @description('Password for account which should be used for domain joining.')
